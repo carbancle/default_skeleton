@@ -1,24 +1,26 @@
 "use client";
 
-import { loginUser } from "@/lib/api"
+import { joinUser } from "@/lib/api"
 import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { ChangeEvent, FormEvent, useState } from "react"
 
-interface Login {
+interface Join {
   email: string,
   password: string,
+  name: string,
 }
 
-const LoginPage = () => {
+const JoinPage = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState<Login>({
+  const [formData, setFormData] = useState<Join>({
     email: "",
     password: "",
+    name: "",
   })
 
   const mutation = useMutation({
-    mutationFn: (loginData: Login) => loginUser(loginData.email, loginData.password),
+    mutationFn: (joinData: Join) => joinUser(joinData.email, joinData.password, joinData.name),
     onSuccess: () => {
       router.push("/");
     },
@@ -41,7 +43,7 @@ const LoginPage = () => {
   }
   return (
     <>
-      <h1>Login</h1>
+      <h1>Join</h1>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -63,6 +65,16 @@ const LoginPage = () => {
             required
           />
         </div>
+        <div>
+          <label>Name:</label>
+          <input
+            type="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Logging in..." : "Login"}
         </button>
@@ -72,4 +84,4 @@ const LoginPage = () => {
   )
 }
 
-export default LoginPage
+export default JoinPage

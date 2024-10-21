@@ -1,8 +1,8 @@
 "use client";
 
-import { refreshAccessToken } from "@/lib/api";
+import { AuthenticatedUser } from "@/lib/api";
 import { useAuthStore } from "@/store/store";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export const accessTokenIsExpired = (token: string) => {
   if (!token) return true;
@@ -12,31 +12,35 @@ export const accessTokenIsExpired = (token: string) => {
   return Date.now() > expriy;
 }
 
+
+
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const setTokens = useAuthStore((state) => state.setTokens);
+  const clearToken = useAuthStore((state) => state.clearToken);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      const localAccessToken = localStorage.getItem("accessToken");
-      const localRefreshToken = localStorage.getItem("refreshToken");
-
-      if (localAccessToken && localRefreshToken) {
-        setTokens(localAccessToken, localRefreshToken);
-
-        if (accessTokenIsExpired(localAccessToken)) {
-          try {
-            const newAccessToken = await refreshAccessToken(localRefreshToken);
-            setTokens(newAccessToken, localRefreshToken);
-            localStorage.setItem("accessToken", newAccessToken);
-          } catch (error) {
-            console.error("토근 갱신 실패", error);
-          }
+      try {
+        const tokens = await AuthenticatedUser();
+        if (tokens) {
+          setTokens(tokens.accessToken, tokens.refreshToken)
+        } else {
+          clearToken();
         }
+      } catch (error) {
+        console.error(error);
+        clearToken();
+      } finally {
+        setLoading(false);
       }
     }
 
     initAuth();
-  }, [setTokens])
+  }, [setTokens, clearToken])
+
+  if (loading) return <p>Loading...</p>
+
   return (
     <>{children}</>
   )

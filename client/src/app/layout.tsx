@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import QueryProvider from "@/context/QueryProvider";
 import AuthProvider from "@/context/AuthProvider";
 
@@ -29,11 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <QueryProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <QueryProvider>
             {children}
-          </AuthProvider>
-        </QueryProvider>
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );

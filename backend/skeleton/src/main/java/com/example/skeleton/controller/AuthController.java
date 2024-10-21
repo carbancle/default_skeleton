@@ -2,7 +2,9 @@ package com.example.skeleton.controller;
 
 import java.util.Date;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,7 @@ import com.example.skeleton.service.MemberService;
 import com.example.skeleton.service.RefreshTokenService;
 import com.example.skeleton.util.TokenProvider;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -74,13 +77,31 @@ public class AuthController {
 				
 				refreshTokenService.updateRefreshToken(member.getEmail(), refreshToken);
 				
-				return ResponseEntity.ok(new JwtResponseDTO(accessToken, refreshToken));
+				// 쿠키 설정
+	            ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+	                .httpOnly(true)
+	                .secure(true) // HTTPS 환경에서만 사용
+	                .path("/")
+	                .maxAge(60 * 60 * 24) // 1일
+	                .build();
+
+	            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+	                .httpOnly(true)
+	                .secure(true)
+	                .path("/")
+	                .maxAge(60 * 60 * 24 * 7) // 7일
+	                .build();
+				
+				return ResponseEntity.ok()
+		                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+		                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+		                .body("로그인 성공");
 			} else {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("증명 요청이 유효하지 않음");
 			}
 		} catch (UsernameNotFoundException e) {
         	log.info("유저 정보 없음");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("증명 요청이 유효하지 않음");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유저 정보 없음");
         }
 	}
 	
@@ -101,6 +122,29 @@ public class AuthController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유저 정보 인증에 실패했습니다."); 
 		}
+	}
+	
+	@GetMapping("/check")
+	public ResponseEntity<?> checkAuthentication(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		String accessToken = null;
+		String refreshToken = null;
+		
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().equals("accessToken")) {
+					accessToken = cookie.getValue();
+				} else if (cookie.getName().equals("refreshToken")) {
+					refreshToken = cookie.getValue();
+				}
+			}
+		}
+		
+		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
+			return ResponseEntity.ok(new JwtResponseDTO(accessToken, refreshToken));
+		}
+		
+		return ResponseEntity.ok("Not Authenticated");
 	}
 
 	@PostMapping("/refresh")
