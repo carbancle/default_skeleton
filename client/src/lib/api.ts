@@ -81,6 +81,20 @@ export const joinUser = async (
   return response;
 };
 
+export const logoutUser = async () => {
+  const response = await fetch(`${url}/logout`, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: "include",
+  })
+
+  if (!response.ok) {
+    console.error("Failed to Logout");
+  }
+}
+
 export const refreshAccessToken = async (refreshToken: string) => {
   const response = await fetch(`${url}/refresh`, {
     method: "POST",

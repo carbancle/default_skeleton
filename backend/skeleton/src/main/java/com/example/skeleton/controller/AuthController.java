@@ -26,6 +26,7 @@ import com.example.skeleton.util.TokenProvider;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -104,6 +105,29 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유저 정보 없음");
         }
 	}
+	
+	@PostMapping("/logout")
+	public ResponseEntity<?> logoutUser() {
+		// HttpOnly Access Token 쿠키 초기화
+        ResponseCookie accessToken = ResponseCookie.from("accessToken", "")
+            .httpOnly(true)
+            .path("/")
+            .maxAge(0)  // 쿠키의 유효 기간을 0으로 설정하여 삭제
+            .build();
+				
+        // HttpOnly Refresh Token 쿠키 초기화
+        ResponseCookie refreshToken = ResponseCookie.from("refreshToken", "")
+            .httpOnly(true)
+            .path("/")
+            .maxAge(0)  // 쿠키의 유효 기간을 0으로 설정하여 삭제
+            .build();
+        
+        return ResponseEntity.ok()
+        		.header(HttpHeaders.SET_COOKIE, accessToken.toString())
+        		.header(HttpHeaders.SET_COOKIE, refreshToken.toString())
+        		.body("Logout successful");
+	}
+	
 	
 	@GetMapping("/me")
 	public ResponseEntity<?> getAuthenticatedUser(@RequestHeader("Authorization") String token) {

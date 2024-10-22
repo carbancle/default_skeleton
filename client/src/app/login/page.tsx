@@ -20,7 +20,10 @@ const LoginPage = () => {
   const mutation = useMutation({
     mutationFn: (loginData: Login) => loginUser(loginData.email, loginData.password),
     onSuccess: () => {
-      router.push("/");
+      console.log("로그인 성공");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     },
     onError: (error) => {
       alert("로그인 실패");
