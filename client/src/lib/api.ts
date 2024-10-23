@@ -3,36 +3,27 @@ const url = "http://localhost:8080/api/auth";
 export const AuthenticatedUser = async () => {
   try {
     const response = await fetch(`${url}/check`, {
+      method: "GET",
       credentials: "include",
     });
 
-    const data = await response.text();
+    const data = await response.json();
 
-    if (data !== "Not Authenticated") {
-      const parsedData = JSON.parse(data);
-      if (parsedData.accessToken && parsedData.refreshToken) {
-        return {
-          accessToken: parsedData.accessToken,
-          refreshToken: parsedData.refreshToken,
-        };
-      } else {
-        return null;
-      }
-    } else {
+    if (data.message === "Not Authenticated") {
       return null;
     }
+
+    return data;
   } catch (error) {
     console.error("Authentication Check Failed", error);
     throw error;
   }
 };
 
-export const fetchAuthData = async (accessToken: string) => {
+export const fetchAuthData = async () => {
   const response = await fetch(`${url}/me`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    credentials: "include",
   });
 
   if (response.status === 401 || response.status === 403) {

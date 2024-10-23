@@ -21,9 +21,7 @@ const LoginPage = () => {
     mutationFn: (loginData: Login) => loginUser(loginData.email, loginData.password),
     onSuccess: () => {
       console.log("로그인 성공");
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
+      router.push("/");
     },
     onError: (error) => {
       alert("로그인 실패");

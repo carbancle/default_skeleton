@@ -1,25 +1,14 @@
 "use client";
 
-import { fetchAuthData, logoutUser } from "@/lib/api";
+import { logoutUser } from "@/lib/api";
 import styles from "./page.module.css";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/store";
-
-interface Member {
-  id?: number,
-  email: string,
-  name: string,
-}
+import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthProvider";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const clearToken = useAuthStore((state) => state.clearToken);
-  const { data, error, isLoading } = useQuery<Member>({
-    queryKey: ["AuthData"],
-    queryFn: () => fetchAuthData(accessToken!),
-    enabled: !!accessToken, // accessToken이 있을 때만 실행
-  });
-
+  const router = useRouter();
+  const { authInfo, loading, isAuthenticated } = useAuth();
   const mutation = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
@@ -30,17 +19,16 @@ export default function Home() {
     }
   })
   const logoutHandler = () => {
-    clearToken();
     mutation.mutate();
+    router.push("/login");
   }
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error Loading Data</p>;
+  if (loading) return <p>Loading...</p>
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <p>{data?.email}</p>
-        <p>{data?.name}</p>
+        <p>{(authInfo && isAuthenticated) && authInfo.email}</p>
         <button onClick={logoutHandler}>로그아웃</button>
       </main>
     </div>

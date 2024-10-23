@@ -1,6 +1,7 @@
 package com.example.skeleton.controller;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import com.example.skeleton.service.MemberService;
 import com.example.skeleton.service.RefreshTokenService;
 import com.example.skeleton.util.TokenProvider;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -164,11 +166,20 @@ public class AuthController {
 			}
 		}
 		
-		if (accessToken != null && tokenProvider.validateToken(accessToken)) {
-			return ResponseEntity.ok(new JwtResponseDTO(accessToken, refreshToken));
+		try {
+			// JWT 토큰 검증
+			Claims claims = tokenProvider.getClaims(accessToken);
+			
+			if (!tokenProvider.validateToken(accessToken)) {
+				return ResponseEntity.status(401).body("Token expired or invalid");
+			}
+			
+			String email = claims.getSubject();
+			
+			return ResponseEntity.ok(Map.of("email", email));
+		} catch (Exception e) {
+			return ResponseEntity.ok(Map.of("message", "Not Authenticated"));
 		}
-		
-		return ResponseEntity.ok("Not Authenticated");
 	}
 
 	@PostMapping("/refresh")
