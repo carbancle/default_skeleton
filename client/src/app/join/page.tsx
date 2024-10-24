@@ -22,7 +22,7 @@ const JoinPage = () => {
   const mutation = useMutation({
     mutationFn: (joinData: Join) => joinUser(joinData.email, joinData.password, joinData.name),
     onSuccess: () => {
-      router.push("/");
+      router.push("/login");
     },
     onError: (error) => {
       alert("로그인 실패");

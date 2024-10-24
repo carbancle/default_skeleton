@@ -16,20 +16,27 @@ export default function Home() {
     },
     onError: (error) => {
       console.error("로그아웃 실패", error);
-    }
-  })
+    },
+  });
   const logoutHandler = () => {
     mutation.mutate();
     router.push("/login");
-  }
+  };
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <p>{(authInfo && isAuthenticated) && authInfo.email}</p>
-        <button onClick={logoutHandler}>로그아웃</button>
+        <p>{authInfo && isAuthenticated && authInfo.email}</p>
+        {!isAuthenticated ? (
+          <>
+            <button onClick={() => router.push("/login")}>로그인</button>
+            <button onClick={() => router.push("/join")}>회원가입</button>
+          </>
+        ) : (
+          <button onClick={logoutHandler}>로그아웃</button>
+        )}
       </main>
     </div>
   );
