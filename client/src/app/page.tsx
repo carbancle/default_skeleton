@@ -3,7 +3,7 @@
 import { logoutUser } from "@/lib/api";
 import styles from "./page.module.css";
 import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/Provider/AuthProvider";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
